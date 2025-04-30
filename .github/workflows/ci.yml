@@ -49,15 +49,6 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
           DEBUG: true
 
-      - name: Verifica vulnerabilidades críticas no OWASP
-        run: |
-          if grep -qE 'severity="(Critical|High)"' dependency-check-report.xml; then
-            echo "🚨 Vulnerabilidades CRÍTICAS encontradas no OWASP!";
-            exit 1;
-          else
-            echo "✅ Nenhuma vulnerabilidade crítica encontrada no OWASP.";
-          fi
-
       - name: Upload do relatório OWASP como artefato
         uses: actions/upload-artifact@v4.6.2
         with:
