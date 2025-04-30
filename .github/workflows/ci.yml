@@ -58,7 +58,7 @@ jobs:
           fi
 
       - name: Upload do relatório
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: dependency-check-report
           path: |
