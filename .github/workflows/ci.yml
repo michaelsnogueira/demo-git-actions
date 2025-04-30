@@ -66,7 +66,7 @@ jobs:
           trivy image --severity CRITICAL,HIGH demo-app > trivy-results.txt || true
 
       - name: Upload do relatório Trivy como artefato
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: trivy-results
           path: trivy-results.txt
