@@ -39,9 +39,11 @@ jobs:
           else
             echo "✅ Nenhuma vulnerabilidade crítica encontrada no OWASP.";
           fi
+          
+      
 
       - name: Upload do relatório OWASP como artefato
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dependency-check-report
           path: dependency-check-report.html
@@ -63,7 +65,7 @@ jobs:
           trivy image --severity CRITICAL,HIGH demo-app > trivy-results.txt || true
 
       - name: Upload do relatório Trivy como artefato
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: trivy-results
           path: trivy-results.txt
