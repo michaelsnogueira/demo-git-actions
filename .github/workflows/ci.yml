@@ -15,12 +15,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup do Java 17
-        id: setup-java
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
-          java-package: 'jdk'
           cache: 'gradle'
 
       - name: Grant execute permission for Gradle wrapper
@@ -29,38 +27,45 @@ jobs:
       - name: Build com Gradle
         run: ./gradlew build -x test
 
-      - name: OWASP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@main
+      - name: Executar OWASP Dependency Check
+        id: owasp-check
+        uses: OWASP/dependency-check-action@main
         with:
           project: 'demo-git-actions'
           format: 'HTML'
-          path: '.'
-          out: 'dependency-check-report'
-          args: >
-            --failOnCVSS 7
-            --log odc.log
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-          PATH: ${{ env.PATH }}:${{ env.JAVA_HOME_17_X64 }}/bin
-          DEBUG: true
+          scan-dir: '.'
+          output: 'dependency-check-report'
+          fail-on-cvss: 7
+          additional-arguments: '--log odc.log'
 
-      - name: Verifica vulnerabilidades críticas no OWASP
+      - name: Verificar se relatório foi gerado
+        run: |
+          ls -la dependency-check-report*
+          if [ ! -f dependency-check-report.xml ]; then
+            echo "::error::Relatório OWASP não foi gerado!"
+            exit 1
+          fi
+
+      - name: Verificar vulnerabilidades críticas
         if: always()
         run: |
           if [ -f dependency-check-report.xml ]; then
             if grep -qE 'severity="(Critical|High)"' dependency-check-report.xml; then
-              echo "🚨 Vulnerabilidades CRÍTICAS encontradas no OWASP!";
-              exit 1;
+              echo "::error::Vulnerabilidades CRÍTICAS encontradas no OWASP!"
+              exit 1
             else
-              echo "✅ Nenhuma vulnerabilidade crítica encontrada no OWASP.";
+              echo "✅ Nenhuma vulnerabilidade crítica encontrada no OWASP."
             fi
           else
-            echo "⚠️ Arquivo de relatório não encontrado";
+            echo "::warning::Arquivo de relatório não encontrado"
           fi
 
-      - name: Upload do relatório OWASP como artefato
+      - name: Upload do relatório OWASP
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: dependency-check-report
-          path: dependency-check-report.html
+          path: |
+            dependency-check-report.html
+            dependency-check-report.xml
+            odc.log
