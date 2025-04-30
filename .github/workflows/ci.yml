@@ -42,9 +42,11 @@ jobs:
           path: '.'
           out: 'dependency-check-report'
           args: >
-            --enableExperimental
             --failOnCVSS 7
             --log odc.log
+            env:
+            JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
+            DEBUG: true
 
       - name: Verifica vulnerabilidades críticas no OWASP
         run: |
