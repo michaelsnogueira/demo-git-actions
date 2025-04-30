@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Limpar cache local do runner
-      - run: sudo rm -rf /home/runner/work/_actions
+        run: sudo rm -rf /home/runner/work/_actions
 
       - name: Checkout do código
         uses: actions/checkout@v3
