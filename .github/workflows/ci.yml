@@ -31,8 +31,12 @@ jobs:
         with:
           project: 'demo-git-actions'
           scanPath: '.'
-          format: 'ALL'
-          path: ''
+          format: 'HTML'
+          path: '.'
+          args: >
+            --enableExperimental
+            --failOnCVSS 7
+            --log odc.log
 
       - name: Verifica vulnerabilidades críticas no OWASP
         run: |
