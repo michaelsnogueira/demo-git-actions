@@ -8,7 +8,7 @@ ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
 # Copia o JAR gerado pelo build para o contêiner
-COPY target/*.jar app.jar
+COPY build/libs/*.jar app.jar
 
 # Verifica a versão do Java (opcional, para debug)
 RUN java -version
