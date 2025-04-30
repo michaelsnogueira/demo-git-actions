@@ -1,4 +1,4 @@
-name: CI com Gradle, OWASP e Trivy
+name: CI com Gradle e OWASP Dependency Check
 
 on:
   push:
@@ -14,58 +14,53 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Setup do Java 17
+      - name: Setup Java 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Grant execute permission for Gradle wrapper
+      - name: Dar permissão ao Gradle Wrapper
         run: chmod +x ./gradlew
 
       - name: Build com Gradle
         run: ./gradlew build -x test
 
-      - name: Executar OWASP Dependency Check
-        id: owasp-check
-        uses: OWASP/dependency-check-action@v3
-        with:
-          project: 'demo-git-actions'
-          format: 'HTML'
-          scan-dir: '.'
-          output: 'dependency-check-report'
-          fail-on-cvss: 7
-          additional-arguments: '--log odc.log'
+      - name: Instalar dependências
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
 
-      - name: Verificar se relatório foi gerado
+      - name: Baixar e instalar OWASP Dependency Check
+        run: |
+          DC_VERSION=8.3.1
+          wget https://github.com/jeremylong/DependencyCheck/releases/download/v${DC_VERSION}/dependency-check-${DC_VERSION}-release.zip
+          unzip dependency-check-${DC_VERSION}-release.zip
+          echo "DC_HOME=$(pwd)/dependency-check" >> $GITHUB_ENV
+
+      - name: Executar análise de dependências
+        run: |
+          ${{ env.DC_HOME }}/bin/dependency-check.sh \
+            --project "demo-git-actions" \
+            --scan "." \
+            --format "HTML" \
+            --out "dependency-check-report" \
+            --failOnCVSS 7 \
+            --log odc.log
+
+      - name: Verificar relatório
         run: |
           ls -la dependency-check-report*
-          if [ ! -f dependency-check-report.xml ]; then
-            echo "::error::Relatório OWASP não foi gerado!"
+          if [ ! -f dependency-check-report.html ]; then
+            echo "::error::Relatório não foi gerado!"
             exit 1
           fi
 
-      - name: Verificar vulnerabilidades críticas
-        if: always()
-        run: |
-          if [ -f dependency-check-report.xml ]; then
-            if grep -qE 'severity="(Critical|High)"' dependency-check-report.xml; then
-              echo "::error::Vulnerabilidades CRÍTICAS encontradas no OWASP!"
-              exit 1
-            else
-              echo "✅ Nenhuma vulnerabilidade crítica encontrada no OWASP."
-            fi
-          else
-            echo "::warning::Arquivo de relatório não encontrado"
-          fi
-
-      - name: Upload do relatório OWASP
-        if: always()
+      - name: Upload do relatório
         uses: actions/upload-artifact@v3
         with:
           name: dependency-check-report
           path: |
             dependency-check-report.html
-            dependency-check-report.xml
             odc.log
