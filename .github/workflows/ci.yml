@@ -52,17 +52,18 @@ jobs:
       - name: Verificar relatório
         run: |
           ls -la dependency-check-report*
-          if [ ! -f dependency-check-report.html ]; then
+          if [ ! -f dependency-check-report/dependency-check-report.html ]; then
             echo "::error::Relatório não foi gerado!"
             exit 1
           fi
+      
 
       - name: Upload do relatório
         uses: actions/upload-artifact@v4.6.2
         with:
           name: dependency-check-report
           path: |
-            dependency-check-report.html
+            dependency-check-report/dependency-check-report.html
             odc.log
 
       - name: Build da imagem Docker
