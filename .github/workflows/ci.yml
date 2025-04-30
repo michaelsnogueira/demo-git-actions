@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-22.04  # <<< VERSÃO ESTÁVEL DO RUNNER
 
     steps:
+      - name: Limpar cache local do runner
+      - run: sudo rm -rf /home/runner/work/_actions
+
       - name: Checkout do código
         uses: actions/checkout@v3
 
