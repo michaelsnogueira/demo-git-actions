@@ -39,6 +39,7 @@ jobs:
           project: 'demo-git-actions'
           scanPath: '.'
           format: 'ALL'
+          path: ''
 
       - name: Verifica vulnerabilidades críticas no OWASP
         run: |
@@ -50,7 +51,7 @@ jobs:
           fi
 
       - name: Upload do relatório OWASP como artefato
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: dependency-check-report
           path: dependency-check-report.html
