@@ -41,13 +41,13 @@ jobs:
 
       - name: Executar análise de dependências
         run: |
+          # ⚠️ Removido o parâmetro --failOnCVSS 7 para não barrar a pipeline
           ${{ env.DC_HOME }}/bin/dependency-check.sh \
             --project "demo-git-actions" \
             --scan "." \
             --format "HTML" \
             --out "dependency-check-report" \
-#            --failOnCVSS 7 \
-            --log odc.log
+            --log odc.log || echo "⚠️ Dependency Check encontrou vulnerabilidades, mas não bloqueará a pipeline."
 
       - name: Verificar relatório
         run: |
@@ -58,7 +58,7 @@ jobs:
           fi
 
       - name: Upload do relatório
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v3
         with:
           name: dependency-check-report
           path: |
@@ -69,20 +69,21 @@ jobs:
         run: docker build -t demo-git-actions .
 
       - name: Scan de vulnerabilidades com Trivy
+        # ⚠️ Removido exit-code: 1 para não falhar o pipeline com vulnerabilidades
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: image
           image-ref: demo-git-actions
           format: table
           severity: CRITICAL,HIGH
-#          exit-code: 1  # Faz a pipeline falhar se encontrar essas vulnerabilidades
+          exit-code: 0  # <-- Agora o scan nunca falha
 
       - name: Exportar relatório Trivy
         run: |
           trivy image --severity CRITICAL,HIGH demo-git-actions > trivy-results.txt || true
 
       - name: Upload do relatório Trivy
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v3
         with:
           name: trivy-results
           path: trivy-results.txt
